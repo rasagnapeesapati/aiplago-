@@ -12,6 +12,7 @@ const API_BASE = (() => {
 const AUTH_TOKEN_KEY = 'aiplago_token';
 const AUTH_USER_KEY = 'aiplago_user';
 const ANON_ID_KEY = 'aiplago_anon_id';
+const API_URL = 'https://aiplago-0mv2.onrender.com'
 
 // ── Anonymous client id (for free-trial tracking before signup) ──
 function getAnonId() {
