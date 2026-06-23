@@ -17,6 +17,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 6000;
 
 // ── Core middleware ──
