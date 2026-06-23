@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AIPlago — AI Detector, Plagiarism Checker &amp; Text Humanizer</title>
+<meta name="description" content="AIPlago analyzes text for AI-generated patterns and plagiarism risk, rewrites AI text to sound naturally human, and generates fresh, original content. Try 3 scans free."/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23E8B84B%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22%232A1B00%22>✓</text></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/base.css"/>
+<link rel="stylesheet" href="css/app.css"/>
+</head>
+<body class="bg-glow">
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="/">
+    <div class="seal"></div>
+    <span class="word-ai">AI</span><span class="word-plago">Plago</span>
+  </a>
+  <div class="nav-links">
+    <button class="nav-link" onclick="scrollToTool()">Tools</button>
+    <button class="nav-link" onclick="scrollToFeatures()">Features</button>
+    <button class="nav-link" onclick="scrollToPricing()">Pricing</button>
+    <a class="nav-link" href="/pages/dashboard.html">Dashboard</a>
+  </div>
+  <div class="nav-actions" id="navAuthSlot">
+    <!-- populated by js/api.js renderNavAuthState() -->
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> AI-Powered Originality Suite</div>
+  <h1>Verify, Clean &amp; <span class="grad">Humanize</span><br/>Any Piece of Text</h1>
+  <p>AIPlago checks text for AI-writing patterns and plagiarism risk, rewrites AI content so it reads naturally human, and writes fresh content from scratch — all in one place.</p>
+  <div class="hero-cta">
+    <button class="btn btn-gold btn-lg" onclick="scrollToTool()">Try it free — no card required</button>
+    <button class="btn btn-outline btn-lg" onclick="scrollToFeatures()">See how it works</button>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><span class="stat-val">3</span><span class="stat-lbl">Free Scans, No Signup</span></div>
+    <div class="stat"><span class="stat-val">4</span><span class="stat-lbl">Tools In One Suite</span></div>
+    <div class="stat"><span class="stat-val">10K</span><span class="stat-lbl">Words Per Scan</span></div>
+  </div>
+  <div class="trial-banner" id="trialBanner"></div>
+</section>
+
+<!-- APP -->
+<main class="app" id="tool">
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="ai" onclick="switchTab('ai', this)">
+      <span class="tab-icon">◎</span> AI Detector
+    </button>
+    <button class="tab-btn" data-tab="plag" onclick="switchTab('plag', this)">
+      <span class="tab-icon">⌕</span> Plagiarism Checker
+    </button>
+    <button class="tab-btn" data-tab="human" onclick="switchTab('human', this)">
+      <span class="tab-icon">✦</span> Humanizer
+    </button>
+    <button class="tab-btn" data-tab="clean" onclick="switchTab('clean', this)">
+      <span class="tab-icon">✎</span> Content Generator
+    </button>
+  </div>
+
+  <!-- ═══════════ AI DETECTOR ═══════════ -->
+  <div class="panel active" id="panel-ai">
+    <div class="card">
+      <div class="card-title">Paste or upload text</div>
+      <div class="input-area scan-wrap" id="aiScanWrap">
+        <div class="scan-line" id="aiScanLine"></div>
+        <textarea id="aiInput" placeholder="Paste text here to check whether it reads as AI-generated or human-written. Supports up to 10,000 words…" oninput="updateCount('aiInput','aiWordCount','aiCharCount')"></textarea>
+      </div>
+      <div class="meta-bar">
+        <div class="word-count">
+          <span>Words: <strong id="aiWordCount">0</strong></span>
+          <span>Chars: <strong id="aiCharCount">0</strong></span>
+        </div>
+        <span id="aiFile" class="file-tag"></span>
+      </div>
+      <div class="upload-zone" id="aiUpload" onclick="document.getElementById('aiFileInput').click()"
+           ondragover="dragOver(event,'aiUpload')" ondragleave="dragLeave('aiUpload')" ondrop="dropFile(event,'aiInput','aiUpload','aiFile','aiWordCount','aiCharCount')">
+        <input type="file" id="aiFileInput" accept=".txt,.docx,.pdf" onchange="handleFile(event,'aiInput','aiFile','aiWordCount','aiCharCount')"/>
+        <div class="upload-icon">⇪</div>
+        <p><strong>Drop a file here</strong> or click to upload</p>
+        <p class="muted-sm">Supports TXT, DOCX, PDF — up to 10MB</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="aiRunBtn" onclick="runAIDetect()">Analyze text</button>
+        <button class="btn btn-ghost" onclick="clearPanel('aiInput','aiWordCount','aiCharCount','aiResult','aiFile')">Clear</button>
+      </div>
+    </div>
+
+    <div class="loader" id="aiLoader"><div class="spinner"></div> Analyzing language patterns…</div>
+
+    <div class="result-card" id="aiResult">
+      <div class="score-row">
+        <div class="ring-wrap">
+          <svg width="92" height="92" viewBox="0 0 92 92">
+            <circle cx="46" cy="46" r="37" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+            <circle id="aiRingFill" cx="46" cy="46" r="37" fill="none" stroke="#F0465B"
+                    stroke-width="8" stroke-linecap="round" stroke-dasharray="232" stroke-dashoffset="232"
+                    style="transition:stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1)"/>
+          </svg>
+          <div class="ring-val"><span id="aiScoreVal">0%</span><small>AI</small></div>
+        </div>
+        <div class="score-details">
+          <h3 id="aiVerdict">Analyzing…</h3>
+          <p id="aiSummary"></p>
+          <div class="tag-row">
+            <span class="tag" id="aiTag1"></span>
+            <span class="tag" id="aiTag2"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div class="meter">
+            <div class="meter-label"><span>AI probability</span><span id="aiPct">0%</span></div>
+            <div class="meter-track"><div class="meter-fill fill-crimson" id="aiMeter"></div></div>
+          </div>
+          <div class="meter">
+            <div class="meter-label"><span>Human probability</span><span id="humanPct">0%</span></div>
+            <div class="meter-track"><div class="meter-fill fill-emerald" id="humanMeter"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="meter">
+            <div class="meter-label"><span>Perplexity score</span><span id="perpPct"></span></div>
+            <div class="meter-track"><div class="meter-fill fill-cyan" id="perpMeter"></div></div>
+          </div>
+          <div class="meter">
+            <div class="meter-label"><span>Burstiness</span><span id="burstPct"></span></div>
+            <div class="meter-track"><div class="meter-fill fill-cyan" id="burstMeter"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hl-section">
+        <div class="card-title">Sentence-level analysis</div>
+        <div class="hl-text" id="aiHlText"></div>
+      </div>
+
+      <div class="legend-row">
+        <span class="tag tag-crimson">AI-flagged</span>
+        <span class="tag tag-emerald">Human-style</span>
+        <span class="tag tag-amber">Uncertain</span>
+      </div>
+      <p class="disclaimer">Estimate based on linguistic pattern analysis — not a definitive guarantee of authorship.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ PLAGIARISM ═══════════ -->
+  <div class="panel" id="panel-plag">
+    <div class="card">
+      <div class="card-title">Paste or upload text</div>
+      <div class="input-area scan-wrap" id="plagScanWrap">
+        <div class="scan-line" id="plagScanLine"></div>
+        <textarea id="plagInput" placeholder="Paste text to assess originality risk and flag commonly-circulated phrasing…" oninput="updateCount('plagInput','plagWordCount','plagCharCount')"></textarea>
+      </div>
+      <div class="meta-bar">
+        <div class="word-count">
+          <span>Words: <strong id="plagWordCount">0</strong></span>
+          <span>Chars: <strong id="plagCharCount">0</strong></span>
+        </div>
+        <span id="plagFile" class="file-tag"></span>
+      </div>
+      <div class="upload-zone" id="plagUpload" onclick="document.getElementById('plagFileInput').click()"
+           ondragover="dragOver(event,'plagUpload')" ondragleave="dragLeave('plagUpload')" ondrop="dropFile(event,'plagInput','plagUpload','plagFile','plagWordCount','plagCharCount')">
+        <input type="file" id="plagFileInput" accept=".txt,.docx,.pdf" onchange="handleFile(event,'plagInput','plagFile','plagWordCount','plagCharCount')"/>
+        <div class="upload-icon">⇪</div>
+        <p><strong>Drop a file here</strong> or click to upload</p>
+        <p class="muted-sm">Supports TXT, DOCX, PDF — up to 10MB</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="runPlagCheck()">Check originality</button>
+        <button class="btn btn-ghost" onclick="clearPanel('plagInput','plagWordCount','plagCharCount','plagResult','plagFile')">Clear</button>
+      </div>
+    </div>
+
+    <div class="loader" id="plagLoader"><div class="spinner"></div> Assessing originality risk…</div>
+
+    <div class="result-card" id="plagResult">
+      <div class="score-row">
+        <div class="ring-wrap">
+          <svg width="92" height="92" viewBox="0 0 92 92">
+            <circle cx="46" cy="46" r="37" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+            <circle id="plagRingFill" cx="46" cy="46" r="37" fill="none" stroke="#F2A93B"
+                    stroke-width="8" stroke-linecap="round" stroke-dasharray="232" stroke-dashoffset="232"
+                    style="transition:stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1)"/>
+          </svg>
+          <div class="ring-val"><span id="plagScoreVal">0%</span><small>Risk</small></div>
+        </div>
+        <div class="score-details">
+          <h3 id="plagVerdict"></h3>
+          <p id="plagSummary"></p>
+          <div class="tag-row">
+            <span class="tag" id="plagTag1"></span>
+            <span class="tag" id="plagTag2"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="meter">
+        <div class="meter-label"><span>Similarity risk</span><span id="plagPct">0%</span></div>
+        <div class="meter-track"><div class="meter-fill fill-crimson" id="plagMeter"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-label"><span>Original content</span><span id="origPct">0%</span></div>
+        <div class="meter-track"><div class="meter-fill fill-emerald" id="origMeter"></div></div>
+      </div>
+
+      <div class="hl-section">
+        <div class="card-title">Flagged passages</div>
+        <div class="hl-text" id="plagHlText"></div>
+      </div>
+
+      <div id="plagSources"></div>
+      <p class="disclaimer">AIPlago assesses originality using AI-based pattern analysis rather than a live web index — treat results as a risk signal, not a verified database match.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ HUMANIZER ═══════════ -->
+  <div class="panel" id="panel-human">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">AI-written text to humanize</div>
+        <div class="input-area scan-wrap" id="humanScanWrap">
+          <div class="scan-line" id="humanScanLine"></div>
+          <textarea id="humanInput" placeholder="Paste AI-generated text here. AIPlago will rewrite it to read naturally human…" oninput="updateCount('humanInput','humanWordCount','humanCharCount')"></textarea>
+        </div>
+        <div class="meta-bar">
+          <div class="word-count">
+            <span>Words: <strong id="humanWordCount">0</strong></span>
+            <span>Chars: <strong id="humanCharCount">0</strong></span>
+          </div>
+          <span id="humanFile" class="file-tag"></span>
+        </div>
+        <div class="upload-zone" id="humanUpload" onclick="document.getElementById('humanFileInput').click()"
+             ondragover="dragOver(event,'humanUpload')" ondragleave="dragLeave('humanUpload')" ondrop="dropFile(event,'humanInput','humanUpload','humanFile','humanWordCount','humanCharCount')">
+          <input type="file" id="humanFileInput" accept=".txt,.docx,.pdf" onchange="handleFile(event,'humanInput','humanFile','humanWordCount','humanCharCount')"/>
+          <div class="upload-icon">⇪</div>
+          <p><strong>Drop a file</strong> or click to upload</p>
+        </div>
+
+        <div class="options-grid">
+          <div class="field">
+            <label for="humanMode">Writing mode</label>
+            <select id="humanMode">
+              <option value="general">General / blog</option>
+              <option value="academic">Academic / essay</option>
+              <option value="business">Business / professional</option>
+              <option value="casual">Casual / conversational</option>
+              <option value="creative">Creative / narrative</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="humanStrength">Rewrite strength</label>
+            <select id="humanStrength">
+              <option value="1">Light touch</option>
+              <option value="2" selected>Moderate rewrite</option>
+              <option value="3">Aggressive rewrite</option>
+            </select>
+          </div>
+        </div>
+        <div class="checkbox-row">
+          <label><input type="checkbox" id="keepMeaning" checked/> Preserve original meaning</label>
+          <label><input type="checkbox" id="addVariety" checked/> Add sentence variety</label>
+          <label><input type="checkbox" id="naturalFlow" checked/> Natural conversational flow</label>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="runHumanize()">Humanize text</button>
+          <button class="btn btn-ghost" onclick="clearHumanizer()">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Humanized result</div>
+        <div class="loader" id="humanLoader"><div class="spinner"></div> Rewriting for natural human flow…</div>
+        <div class="result-card" id="humanResult">
+          <div class="tag-row" style="margin-bottom:10px;">
+            <span class="tag tag-emerald" id="humanScore"></span>
+            <span class="tag tag-cyan" id="humanDetect"></span>
+          </div>
+          <div class="output-text" id="humanOutput"></div>
+          <div class="output-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyOutput('humanOutput')">Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadOutput('humanOutput','humanized-text')">Download .txt</button>
+            <button class="btn btn-outline btn-sm" onclick="reRunAI()">Re-check in AI Detector</button>
+          </div>
+          <p class="disclaimer">Estimated score — no rewriting tool can guarantee evasion of every detector, since detectors are updated continuously.</p>
+        </div>
+        <div id="humanEmptyState" class="empty-state">Your humanized text will appear here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CONTENT GENERATOR ═══════════ -->
+  <div class="panel" id="panel-clean">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">What should we write?</div>
+        <textarea id="cleanInput" placeholder="Describe the topic — e.g. 'Benefits of remote work for small teams'…" style="min-height:140px;" oninput="updateCount('cleanInput','cleanWordCount','cleanCharCount')"></textarea>
+        <div class="meta-bar">
+          <div class="word-count"><span>Words: <strong id="cleanWordCount">0</strong></span><span>Chars: <strong id="cleanCharCount">0</strong></span></div>
+        </div>
+        <div class="options-grid">
+          <div class="field">
+            <label for="cleanType">Content type</label>
+            <select id="cleanType">
+              <option value="article">Article</option>
+              <option value="blog post">Blog post</option>
+              <option value="essay">Essay</option>
+              <option value="product description">Product description</option>
+              <option value="social caption">Social caption</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cleanTone">Tone</label>
+            <select id="cleanTone">
+              <option value="professional">Professional</option>
+              <option value="friendly">Friendly</option>
+              <option value="persuasive">Persuasive</option>
+              <option value="informative">Informative</option>
+              <option value="witty">Witty</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cleanLen">Length</label>
+            <select id="cleanLen">
+              <option value="short">Short</option>
+              <option value="medium" selected>Medium</option>
+              <option value="long">Long</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="runCleanGen()">Generate content</button>
+          <button class="btn btn-ghost" onclick="clearCleanGen()">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Generated content</div>
+        <div class="loader" id="cleanLoader"><div class="spinner"></div> Writing original content…</div>
+        <div class="result-card" id="cleanResult">
+          <div class="output-text" id="cleanOutput"></div>
+          <div class="output-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyOutput('cleanOutput')">Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadOutput('cleanOutput','generated-content')">Download .txt</button>
+            <button class="btn btn-outline btn-sm" onclick="sendCleanToHumanizer()">Send to Humanizer</button>
+          </div>
+        </div>
+        <div id="cleanEmptyState" class="empty-state">Your generated content will appear here.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">Why AIPlago</div>
+    <h2 class="section-title">One suite, four tools, zero guesswork</h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon fi-cyan">◎</div>
+        <h4>Pattern-based AI detection</h4>
+        <p>Flags low burstiness, generic transitions, and other linguistic fingerprints of machine-generated text — sentence by sentence.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon fi-amber">⌕</div>
+        <h4>Originality risk scoring</h4>
+        <p>Surfaces commonly-circulated phrasing and templated structure so you can catch issues before you submit or publish.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon fi-gold">✦</div>
+        <h4>Natural-sounding humanizer</h4>
+        <p>Rewrites stiff AI text with real sentence rhythm, contractions, and natural transitions — built to meaningfully cut detection scores.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon fi-emerald">✎</div>
+        <h4>Original content generator</h4>
+        <p>Writes fresh copy from a topic prompt in your tone of choice — no templated AI clichés, no copy-paste risk.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon fi-cyan">⇪</div>
+        <h4>File upload built in</h4>
+        <p>Drop in a .txt, .docx, or .pdf and AIPlago extracts the text automatically — no copy-pasting required.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon fi-amber">▤</div>
+        <h4>Usage dashboard</h4>
+        <p>Track every scan, word count, and tool you've used over time from your personal dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="section-label">Plans</div>
+    <h2 class="section-title">Start free. Upgrade when you need more.</h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h4>Free</h4>
+        <div class="price">$0</div>
+        <p class="muted-sm">3 scans before signup, then unlimited basic use while we're in early access.</p>
+        <ul class="price-list">
+          <li>All 4 tools</li>
+          <li>File upload (TXT, DOCX, PDF)</li>
+          <li>Usage dashboard</li>
+        </ul>
+        <button class="btn btn-outline btn-block" onclick="window.openAuthModal('signup')">Create free account</button>
+      </div>
+      <div class="price-card featured">
+        <span class="price-badge">Most popular</span>
+        <h4>Pro</h4>
+        <div class="price">Coming soon</div>
+        <p class="muted-sm">Higher word limits, priority processing, and export history.</p>
+        <ul class="price-list">
+          <li>Everything in Free</li>
+          <li>Longer document support</li>
+          <li>Priority response times</li>
+          <li>Scan history export</li>
+        </ul>
+        <button class="btn btn-gold btn-block" onclick="showToast('Pro plans are launching soon — you will be notified.')">Notify me</button>
+      </div>
+      <div class="price-card">
+        <h4>Business</h4>
+        <div class="price">Contact us</div>
+        <p class="muted-sm">For teams, classrooms, and content agencies that need volume.</p>
+        <ul class="price-list">
+          <li>Team seats</li>
+          <li>Bulk scanning</li>
+          <li>API access</li>
+        </ul>
+        <button class="btn btn-outline btn-block" onclick="showToast('Reach out via the contact link in the footer.')">Get in touch</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a class="logo" href="/" style="margin-bottom:12px;">
+        <div class="seal"></div>
+        <span class="word-ai">AI</span><span class="word-plago">Plago</span>
+      </a>
+      <p class="muted-sm" style="max-width:280px;">An AI-powered suite for checking, cleaning, and humanizing text — built for writers, students, and content teams.</p>
+    </div>
+    <div>
+      <h5>Tools</h5>
+      <a href="#tool" onclick="switchTab('ai', document.querySelector('[data-tab=ai]')); return false;">AI Detector</a>
+      <a href="#tool" onclick="switchTab('plag', document.querySelector('[data-tab=plag]')); return false;">Plagiarism Checker</a>
+      <a href="#tool" onclick="switchTab('human', document.querySelector('[data-tab=human]')); return false;">Humanizer</a>
+      <a href="#tool" onclick="switchTab('clean', document.querySelector('[data-tab=clean]')); return false;">Content Generator</a>
+    </div>
+    <div>
+      <h5>Company</h5>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/pages/dashboard.html">Dashboard</a>
+    </div>
+    <div>
+      <h5>Legal</h5>
+      <a href="#" onclick="return false;">Privacy Policy</a>
+      <a href="#" onclick="return false;">Terms of Service</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 AIPlago. All rights reserved.</span>
+    <span>Results are AI-generated estimates and should be used as one signal among several, not as definitive proof.</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/auth-modal.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

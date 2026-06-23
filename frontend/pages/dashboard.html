@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard — AIPlago</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23E8B84B%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22%232A1B00%22>✓</text></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/base.css"/>
+<link rel="stylesheet" href="../css/dashboard.css"/>
+</head>
+<body class="bg-glow">
+
+<nav>
+  <a class="logo" href="/">
+    <div class="seal"></div>
+    <span class="word-ai">AI</span><span class="word-plago">Plago</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link" href="/#tool">Tools</a>
+  </div>
+  <div class="nav-actions" id="navAuthSlot"></div>
+</nav>
+
+<main class="dash-wrap" id="dashWrap">
+  <!-- ── Logged-out state ── -->
+  <div class="dash-locked" id="dashLocked">
+    <div class="card auth-card">
+      <div class="seal" style="margin:0 auto 18px;width:52px;height:52px;"></div>
+      <h2>Your dashboard is waiting</h2>
+      <p class="sub">Log in or create a free account to see your usage history, word counts, and scan stats.</p>
+      <div class="flex gap-12" style="justify-content:center;">
+        <button class="btn btn-primary btn-lg" onclick="window.openAuthModal('login')">Log in</button>
+        <button class="btn btn-gold btn-lg" onclick="window.openAuthModal('signup')">Sign up free</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Logged-in dashboard ── -->
+  <div class="dash-content hidden" id="dashContent">
+    <div class="dash-header">
+      <div>
+        <h1 id="dashGreeting">Welcome back</h1>
+        <p class="muted">Here's how your AIPlago usage looks so far.</p>
+      </div>
+      <span class="tag tag-gold" id="dashPlanTag">FREE PLAN</span>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Total scans</span>
+        <span class="kpi-val" id="kpiTotalScans">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Words processed</span>
+        <span class="kpi-val" id="kpiWords">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Scans today</span>
+        <span class="kpi-val" id="kpiToday">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Most used tool</span>
+        <span class="kpi-val" id="kpiTopTool" style="font-size:1.1rem;">—</span>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title">Usage by tool</div>
+        <div id="toolBreakdown" class="tool-breakdown">
+          <p class="empty-state" id="breakdownEmpty">No scans yet — try a tool to see your stats here.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Account</div>
+        <div class="account-info">
+          <div class="account-row"><span class="muted">Name</span><span id="accName"></span></div>
+          <div class="account-row"><span class="muted">Email</span><span id="accEmail"></span></div>
+          <div class="account-row"><span class="muted">Plan</span><span id="accPlan"></span></div>
+          <div class="account-row"><span class="muted">Member since</span><span id="accSince"></span></div>
+        </div>
+        <button class="btn btn-outline btn-block" style="margin-top:18px;" onclick="goToTools()">Go to tools</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">Recent activity</div>
+      <div id="recentActivity">
+        <p class="empty-state" id="activityEmpty">Your recent scans will show up here.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth-modal.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

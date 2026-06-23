@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — AIPlago</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23E8B84B%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22%232A1B00%22>✓</text></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/base.css"/>
+<link rel="stylesheet" href="../css/dashboard.css"/>
+<link rel="stylesheet" href="../css/admin.css"/>
+</head>
+<body class="bg-glow">
+
+<nav>
+  <a class="logo" href="/">
+    <div class="seal"></div>
+    <span class="word-ai">AI</span><span class="word-plago">Plago</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link" href="/pages/dashboard.html">My Dashboard</a>
+  </div>
+  <div class="nav-actions" id="navAuthSlot"></div>
+</nav>
+
+<main class="dash-wrap" id="adminWrap">
+
+  <!-- ── Not an admin / not logged in ── -->
+  <div class="dash-locked" id="adminLocked">
+    <div class="card auth-card">
+      <div class="seal" style="margin:0 auto 18px;width:52px;height:52px;"></div>
+      <h2 id="adminLockedTitle">Admin access required</h2>
+      <p class="sub" id="adminLockedSub">Log in with an admin account to view this page.</p>
+      <button class="btn btn-primary btn-lg" onclick="window.openAuthModal('login')">Log in</button>
+    </div>
+  </div>
+
+  <!-- ── Admin content ── -->
+  <div class="dash-content hidden" id="adminContent">
+    <div class="dash-header">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p class="muted">Platform-wide stats and user management.</p>
+      </div>
+      <span class="tag tag-gold">ADMIN</span>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Total users</span>
+        <span class="kpi-val" id="kTotalUsers">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">New today / this week</span>
+        <span class="kpi-val" id="kNewUsers" style="font-size:1.3rem;">0 / 0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Total scans</span>
+        <span class="kpi-val" id="kTotalScans">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Scans today</span>
+        <span class="kpi-val" id="kScansToday">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Words processed</span>
+        <span class="kpi-val" id="kTotalWords">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Banned accounts</span>
+        <span class="kpi-val" id="kBanned" style="color:var(--crimson);">0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Revenue (all time)</span>
+        <span class="kpi-val" id="kRevenue" style="color:var(--gold);">$0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Top tool</span>
+        <span class="kpi-val" id="kTopTool" style="font-size:1.1rem;">—</span>
+      </div>
+    </div>
+
+    <!-- Trend + breakdown row -->
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title">Signups — last 14 days</div>
+        <div class="trend-chart" id="signupTrend"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Scans — last 14 days</div>
+        <div class="trend-chart" id="scanTrend"></div>
+      </div>
+    </div>
+
+    <div class="dash-grid" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title">Usage by tool (platform-wide)</div>
+        <div id="adminToolBreakdown" class="tool-breakdown"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Plan breakdown</div>
+        <div id="planBreakdown" class="tool-breakdown"></div>
+      </div>
+    </div>
+
+    <!-- User management -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">Manage users</div>
+      <div class="user-search-row">
+        <input type="text" id="userSearchInput" placeholder="Search by name or email…" />
+        <button class="btn btn-ghost btn-sm" onclick="loadUsers(1)">Search</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-row" id="paginationRow"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ── User detail modal ── -->
+<div class="modal-overlay" id="userModalOverlay">
+  <div class="modal-box" style="max-width:520px;">
+    <button class="modal-close" onclick="closeUserModal()">✕</button>
+    <div style="padding:30px;">
+      <h3 id="modalUserName" style="font-family:var(--font-d);font-size:1.2rem;margin-bottom:4px;"></h3>
+      <p class="muted" id="modalUserEmail" style="font-size:13px;margin-bottom:18px;"></p>
+
+      <div class="account-info" style="margin-bottom:20px;">
+        <div class="account-row"><span class="muted">Plan</span><span id="modalUserPlan"></span></div>
+        <div class="account-row"><span class="muted">Status</span><span id="modalUserStatus"></span></div>
+        <div class="account-row"><span class="muted">Total scans</span><span id="modalUserScans"></span></div>
+        <div class="account-row"><span class="muted">Words processed</span><span id="modalUserWords"></span></div>
+        <div class="account-row"><span class="muted">Joined</span><span id="modalUserJoined"></span></div>
+      </div>
+
+      <div class="field">
+        <label>Change plan</label>
+        <select id="modalPlanSelect">
+          <option value="free">Free</option>
+          <option value="pro">Pro</option>
+          <option value="business">Business</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" id="modalBanBtn" onclick="toggleBanCurrentUser()">Ban user</button>
+        <button class="btn btn-outline btn-sm" id="modalAdminBtn" onclick="toggleAdminCurrentUser()">Make admin</button>
+        <button class="btn btn-primary btn-sm" onclick="saveModalPlan()">Save plan</button>
+      </div>
+      <button class="btn btn-block" style="margin-top:14px;background:rgba(240,70,91,0.12);color:#FF9CA8;border:1px solid rgba(240,70,91,0.3);" onclick="deleteCurrentUser()">Delete user permanently</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth-modal.js"></script>
+<script src="../js/admin.js"></script>
+</body>
+</html>
